@@ -1,7 +1,39 @@
 const router = require('express').Router();
+const { JWT_SECRET } = require("../secrets/index");
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const db = require('../../data/dbConfig')
 
-router.post('/register', (req, res) => {
-  res.end('implement register, please!');
+router.post('/register', async (req, res) => {
+  const { username, password } = req.body
+
+  if (!username || !password) {
+    return res.status(400).json({
+      message: 'username and password required'
+    })
+  }
+
+  try {
+    const existingUser = await db('users')
+      .where('username', username)
+      .first()
+
+    if(existingUser) {
+      return res.status(400).json({
+        message: 'username taken'
+      })
+    }
+
+    const hash = await bcrypt.hash(password, 8)
+    const [newUserId] = await db('users').insert({ username, password: hash })
+    res.status(201).json({ id: newUserId, username, password: hash})
+
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({
+      message: `Theres been an error: ${err}`
+    })
+  }
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -30,7 +62,7 @@ router.post('/register', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-  res.end('implement login, please!');
+ 
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
