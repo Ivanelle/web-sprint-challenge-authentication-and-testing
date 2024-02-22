@@ -61,7 +61,43 @@ router.post('/register', async (req, res) => {
   */
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body
+  if (!username || !password) {
+    return res.status(400).json({
+      message: 'username and password required'
+    })
+  }
+
+  try {
+    const user = await db('users')
+      .where('username', username)
+      .first()
+
+    if(!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({
+        message: 'invalid credentials'
+      })
+    }
+    const token = jwt.sign({ 
+      username: user.username,
+      id: user.id
+    },
+    JWT_SECRET, { expiresIn: '1h' }
+    )
+      
+
+    res.status(200).json({
+      message: `welcome, ${user.username}`,
+      token
+    })
+    
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({
+      message: `There's been an error: ${err}`
+    })
+  }
  
   /*
     IMPLEMENT
