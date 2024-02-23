@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 
 describe('[POST] /register', () => {
   beforeEach(async () => {
-    await db('users').truncate()
+    await db('users')
   })
 
   it('on successful register of new user a hashed password is in response body', async () => {
@@ -26,7 +26,7 @@ describe('[POST] /register', () => {
   })
 
   it('should return 400 Bad Request if username is taken', async () => {
-    // Create a user with the same username before the test
+    await db('users').truncate();
     await db('users').insert({ username: 'testuser', password: 'hashedpassword' });
   
     const newUser = { username: 'testuser', password: 'testpassword' };
@@ -59,6 +59,7 @@ describe('[POST] /login', () => {
   })
 
   it('on invalid username response body includes message', async () => {
+    
     const res = await request(server)
     .post('/api/auth/login')
     .send({ username: 'nonexistentuser', password: 'testpassword' })
@@ -68,8 +69,5 @@ describe('[POST] /login', () => {
   })
 })
 
-test('[0] sanity check', () => {
-  expect(true).not.toBe(false)
-})
 
 
