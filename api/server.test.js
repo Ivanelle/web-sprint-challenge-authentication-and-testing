@@ -1,10 +1,21 @@
 const request = require('supertest');
 const server = require('./server');
 const db = require('../data/dbConfig');
+const knexConfig = require('../knexfile').testing;
+const knex = require('knex')(knexConfig);
 const bcrypt = require('bcryptjs');
 const { JWT_SECRET } = require("./secrets/index");
 const jwt = require('jsonwebtoken')
-const Jokes = require('../api/jokes/jokes-data'); 
+const Jokes = require('../api/jokes/jokes-data');
+
+
+beforeAll(async () => {
+  await knex.migrate.latest();
+});
+
+afterAll(async () => {
+  await knex.destroy();
+});
 
 
 describe('[POST] /register', () => {
