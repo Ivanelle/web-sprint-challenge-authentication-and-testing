@@ -106,8 +106,25 @@ it('should return status 200 and all jokes when authenticated', async () => {
 it('should return status 401 when not authenticated', async () => {
   const res = await request(server).get('/api/jokes');
   expect(res.status).toBe(401);
+})
+it('responds with a "token required" message on missing token', async () => {
+  const res = await request(server).get('/api/jokes');
+  expect(res.status).toBe(401);
+  expect(res.body.message).toMatch('token required');
 });
+
+it('responds with a "token invalid" message on invalid token', async () => {
+  const token = jwt.sign({ username: 'testuser' }, 'invalidsecret');
+  const res = await request(server)
+    .get('/api/jokes')
+    .set('Authorization', `${token}`);
+  expect(res.status).toBe(401);
+  expect(res.body.message).toMatch('token invalid');
 });
+
+});
+
+
 
 
 
