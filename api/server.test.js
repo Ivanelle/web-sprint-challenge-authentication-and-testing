@@ -2,6 +2,10 @@ const request = require('supertest');
 const server = require('./server');
 const db = require('../data/dbConfig');
 const bcrypt = require('bcryptjs');
+const { JWT_SECRET } = require("./secrets/index");
+const jwt = require('jsonwebtoken')
+const Jokes = require('../api/jokes/jokes-data'); 
+
 
 describe('[POST] /register', () => {
   beforeEach(async () => {
@@ -68,6 +72,31 @@ describe('[POST] /login', () => {
     expect(res.body).toHaveProperty('message', 'invalid credentials')
   })
 })
+
+describe('[GET] /api/jokes', () => {
+  let token;
+
+beforeEach(async () => {
+  const user = { username: 'testuser', id: '1' };
+  token = jwt.sign({ 
+    username: user.username,
+    id: user.id
+  }, JWT_SECRET, { expiresIn: '1h' });
+})
+it('should return status 200 and all jokes when authenticated', async () => {
+  const res = await request(server)
+    .get('/api/jokes')
+    .set('Authorization', `${token}`);
+
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual(Jokes);
+})
+
+it('should return status 401 when not authenticated', async () => {
+  const res = await request(server).get('/api/jokes');
+  expect(res.status).toBe(401);
+});
+});
 
 
 
