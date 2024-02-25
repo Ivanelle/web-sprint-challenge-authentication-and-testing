@@ -118,7 +118,7 @@ it('responds with a "token invalid" message on invalid token', async () => {
   const token = jwt.sign({ username: 'testuser' }, 'invalidsecret');
   const res = await request(server)
     .get('/api/jokes')
-    .send('Authorization', `${token}`)
+    .set('Authorization', `Bearer ${token}`)
   expect(res.status).toBe(401)
   expect(res.body.message).toBe('token invalid');
 });
